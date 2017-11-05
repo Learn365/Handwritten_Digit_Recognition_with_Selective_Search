@@ -152,7 +152,7 @@ def make_pic(img, data):
 
 def extract_images():
     # 第二步：执行搜索工具,展示搜索结果
-    image_path = "./data/1.png"
+    image_path = "./data/add.png"
     # 用cv2读取图片
     img = cv2.imread(image_path)
     # 白底黑字图 改为黑底白字图
