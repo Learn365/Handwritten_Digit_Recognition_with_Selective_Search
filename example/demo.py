@@ -50,7 +50,7 @@ def show_fig(img, data):
     plt.show()
 
 
-def first_filter(area, regions):
+def first_filter(avg_area, max_area, regions):
     candidates = []
     for r in regions:
         x, y, w, h = r['rect']
@@ -59,14 +59,17 @@ def first_filter(area, regions):
             continue
 
         # 太小和太大的不要
-        if (w <= 5) or (h <= 5):
-            continue
-        if (w * h) > area:
-            continue
+        #!!!if (w <= 5) or (h <= 5):
+        #!!!    continue
+        #!!! if (w * h) > avg_area:
+        #!!!    continue
         # if (w * h) < (area / 20):
         #     continue
         # 保留1
-        if ((w * h) < (area / 20)) and ((h / w) < 3):
+        #!!!if ((w * h) < (area / 20)) and ((h / w) < 3):
+        #!!!    continue
+        # ignore the max
+        if w * h >= max_area:
             continue
 
         candidates.append((x, y, w, h))
@@ -145,14 +148,16 @@ def make_pic(img, data):
         # temp_img = np.array(cv2.threshold(temp_img, 0, 1, cv2.THRESH_BINARY)[1], dtype='float32')
         temp[padding:(padding+size), padding:(padding+size)] = temp_img
         image_data.append(temp)
+        #!!!image_data.append(temp_img)
         plt.imshow(temp, cmap="gray")
+        #!!!plt.imshow(temp_img, cmap="gray")
         plt.show()
     return image_data
 
 
 def extract_images():
     # 第二步：执行搜索工具,展示搜索结果
-    image_path = "./data/add.png"
+    image_path = "./data/12.png"  #"./data/add.png"
     # 用cv2读取图片
     img = cv2.imread(image_path)
     # 白底黑字图 改为黑底白字图
@@ -168,17 +173,20 @@ def extract_images():
     # 接下来我们把窗口和图像打印出来，对它有个直观认识
     cv2.imshow('image', img)
     # 计算区域面积均值
-    area = 0
+    avg_area = 0
+    max_area = 0
     for reg in regions:
         x, y, w, h = reg['rect']
-        area += w * h
-    area /= len(regions)
+        if w * h > max_area:
+            max_area = w * h
+        avg_area += w * h
+    avg_area /= len(regions)
     # 展示区域分布
     show_fig(img, [data['rect'] for data in regions])
 
     # 第三步：过滤掉冗余的窗口
     # 1）第一过滤
-    candidates = first_filter(area, regions)
+    candidates = first_filter(avg_area,max_area, regions)
     print('after first filter left %d regions' % len(candidates))
 
     # 展示第一次过滤后的区域分布
